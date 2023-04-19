@@ -190,7 +190,7 @@ public class UnboundPredicate<T> extends Predicate<T, UnboundTerm<T>>
     return new BoundLiteralPredicate<>(op(), boundTerm, lit);
   }
 
-  private Expression bindInOperation(BoundTerm<T> boundTerm) {
+  protected List<Literal<T>> getConvertedLiterals(BoundTerm<T> boundTerm) {
     List<Literal<T>> convertedLiterals =
         Lists.newArrayList(
             Iterables.filter(
@@ -207,6 +207,11 @@ public class UnboundPredicate<T> extends Predicate<T, UnboundTerm<T>>
                       return converted;
                     }),
                 lit -> lit != Literals.aboveMax() && lit != Literals.belowMin()));
+    return convertedLiterals;
+  }
+
+  private Expression bindInOperation(BoundTerm<T> boundTerm) {
+    List<Literal<T>> convertedLiterals = getConvertedLiterals(boundTerm);
 
     if (convertedLiterals.isEmpty()) {
       switch (op()) {
