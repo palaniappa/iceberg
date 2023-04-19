@@ -21,6 +21,7 @@ package org.apache.iceberg.expressions;
 import static org.apache.iceberg.expressions.Expressions.rewriteNot;
 
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
@@ -305,6 +306,8 @@ public class InclusiveMetricsEvaluator {
           return ROWS_MIGHT_MATCH;
         }
 
+        lower = getFunctionAppliedValue(lower);
+
         int cmp = lit.comparator().compare(lower, lit.value());
         if (cmp > 0) {
           return ROWS_CANNOT_MATCH;
@@ -314,6 +317,8 @@ public class InclusiveMetricsEvaluator {
       if (upperBounds != null && upperBounds.containsKey(id)) {
         T upper = Conversions.fromByteBuffer(ref.type(), upperBounds.get(id));
 
+        upper = getFunctionAppliedValue(upper);
+
         int cmp = lit.comparator().compare(upper, lit.value());
         if (cmp < 0) {
           return ROWS_CANNOT_MATCH;
@@ -321,6 +326,19 @@ public class InclusiveMetricsEvaluator {
       }
 
       return ROWS_MIGHT_MATCH;
+    }
+
+    private <T> T getFunctionAppliedValue(T value) {
+      if (expr instanceof BoundLiteralFunctionPredicate) {
+        String function = ((BoundLiteralFunctionPredicate) expr).getFunctionName();
+        if (function.equalsIgnoreCase("lower")) {
+          if (value instanceof CharBuffer) {
+            T newValue = (T) CharBuffer.wrap(value.toString().toLowerCase().toCharArray());
+            return newValue;
+          }
+        }
+      }
+      return value;
     }
 
     @Override

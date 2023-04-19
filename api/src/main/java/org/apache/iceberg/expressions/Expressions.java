@@ -210,6 +210,13 @@ public class Expressions {
     return predicate(Operation.IN, ref(name), values);
   }
 
+  public static <T> UnboundFunctionPredicate<T> in(
+      String name, Iterable<T> values, String functionName) {
+    Preconditions.checkNotNull(values, "Values cannot be null for IN predicate.");
+    Preconditions.checkNotNull(functionName, "functionName cannot be null for IN predicate.");
+    return new UnboundFunctionPredicate(Operation.IN, ref(name), values, functionName);
+  }
+
   public static <T> UnboundPredicate<T> in(UnboundTerm<T> expr, Iterable<T> values) {
     Preconditions.checkNotNull(values, "Values cannot be null for IN predicate.");
     return predicate(Operation.IN, expr, values);
